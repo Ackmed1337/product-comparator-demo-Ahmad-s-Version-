@@ -1,71 +1,53 @@
 import React from 'react'
-import {connect} from 'react-redux'
-import {START_RETRIEVE_PRODUCT_LIST, startRetrieveProductList, retrieveProductList} from '../../../store/banking/data'
+import { connect } from 'react-redux'
+import { START_RETRIEVE_PRODUCT_LIST, startRetrieveProductList, retrieveProductList } from '../../../store/banking/data'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import ProductCategory from './ProductCategory'
-import {normalise} from '../../../utils/url'
+import { normalise } from '../../../utils/url'
 
 class BankingProductList extends React.Component {
-
   componentDidMount() {
     const { dataSourceIndex, dataSource, versionInfo } = this.props
-    const { url } = dataSource
-    const normalisedUrl = normalise(url)
-    const productListUrl = normalisedUrl + '/banking/products'
+    const base = normalise(dataSource.url)
     this.props.startRetrieveProductList(dataSourceIndex)
-    this.props.retrieveProductList(dataSourceIndex, normalisedUrl, productListUrl, versionInfo.xV, versionInfo.xMinV)
+    this.props.retrieveProductList(dataSourceIndex, base, base + '/banking/products', versionInfo.xV, versionInfo.xMinV)
   }
 
   render() {
     const { dataSourceIndex } = this.props
-    let productList = this.props.productList[dataSourceIndex];
-    productList = !!productList ? productList : {}
-    const { progress, totalRecords, detailRecords, failedDetailRecords, products, productDetails } = productList
-    const productsByCategory = {}
-    const processedRecords = detailRecords + failedDetailRecords
-    if (!!totalRecords && totalRecords <= processedRecords) {
-      const productsMap = {}
+    const data = this.props.productList[dataSourceIndex] || {}
+    const { progress, totalRecords, detailRecords = 0, failedDetailRecords = 0, products, productDetails } = data
+    const processed = detailRecords + failedDetailRecords
+    const done = !!totalRecords && totalRecords <= processed
+
+    const byCategory = {}
+    if (done) {
+      const fallback = {}
       if (failedDetailRecords > 0) {
-        products.forEach(product => {productsMap[product.productId] = product})
+        products.forEach(p => { fallback[p.productId] = p })
       }
-      !!productDetails && productDetails.forEach(productDetail => {
-        if (productDetail) {
-          let productCategory = productDetail.productCategory;
-          if (!productsByCategory[productCategory]) {
-            productsByCategory[productCategory] = []
-          }
-          productsByCategory[productCategory].push(productDetail)
-          delete productsMap[productDetail.productId]
-        }
+      productDetails?.forEach(pd => {
+        if (!pd) return
+        byCategory[pd.productCategory] = byCategory[pd.productCategory] || []
+        byCategory[pd.productCategory].push(pd)
+        delete fallback[pd.productId]
       })
-      Object.keys(productsMap).forEach(productId => {
-        const product = productsMap[productId]
-        let productCategory = product.productCategory;
-        if (!productsByCategory[productCategory]) {
-          productsByCategory[productCategory] = []
-        }
-        productsByCategory[productCategory].push(product)
+      Object.values(fallback).forEach(p => {
+        byCategory[p.productCategory] = byCategory[p.productCategory] || []
+        byCategory[p.productCategory].push(p)
       })
     }
 
     return (
-      <div style={{maxHeight: 300, overflow: 'auto'}}>
-        {
-          !!totalRecords && (processedRecords < totalRecords) &&
-          <LinearProgress variant='determinate' value={processedRecords * 100 / totalRecords} style={{width: '93%'}} />
-        }
-        {
-          progress === START_RETRIEVE_PRODUCT_LIST && <p>Getting all current products...</p>
-        }
-        {
-          processedRecords < totalRecords && <p>Getting product details...</p>
-        }
-        {
-          !!products && processedRecords >= totalRecords &&
-          Object.keys(productsByCategory).sort().map((category, index) => (
-            <ProductCategory key={index} category={category} products={productsByCategory[category]} dataSourceIndex={dataSourceIndex}/>
-          ))
-        }
+      <div style={{ maxHeight: 300, overflow: 'auto' }}>
+        {!!totalRecords && processed < totalRecords && (
+          <LinearProgress variant="determinate" value={(processed / totalRecords) * 100} style={{ width: '93%' }} />
+        )}
+        {progress === START_RETRIEVE_PRODUCT_LIST && <p>Loading products...</p>}
+        {processed < totalRecords && <p>Loading product details...</p>}
+        {products && done && Object.keys(byCategory).sort().map((cat, i) => (
+          <ProductCategory key={i} category={cat} products={byCategory[cat]} dataSourceIndex={dataSourceIndex} />
+        ))}
       </div>
     )
   }
@@ -73,9 +55,7 @@ class BankingProductList extends React.Component {
 
 const mapStateToProps = state => ({
   productList: state.banking,
-  versionInfo: state.versionInfo.vHeaders
+  versionInfo: state.versionInfo.vHeaders,
 })
 
-const mapDispatchToProps = {startRetrieveProductList, retrieveProductList}
-
-export default connect(mapStateToProps, mapDispatchToProps)(BankingProductList)
+export default connect(mapStateToProps, { startRetrieveProductList, retrieveProductList })(BankingProductList)

@@ -4,55 +4,35 @@ import Duration from '../Duration'
 import { connect } from 'react-redux'
 import { translateDiscoveryStatus } from '../../../utils/dict'
 
-class StatusOutages extends React.Component {
-
-  render() {
-    const { statusDetails, outagesDetails } = this.props
-    return (
-    <>
-      {!!statusDetails &&
+const StatusOutages = ({ statusDetails, outagesDetails }) => (
+  <>
+    {statusDetails && (
       <>
-        <h4>Status</h4>
-        <div style={{fontSize: '0.8rem'}}>
-          <div>Status: {translateDiscoveryStatus(statusDetails.status)}{!!statusDetails.explanation && <span> - {statusDetails.explanation}</span>}</div>
-          {!!statusDetails.detectionTime && <div>Detection Time: <DateTime rfc3339={statusDetails.detectionTime}/></div>}
-          {!!statusDetails.expectedResolutionTime && <div>Expected Resolution Time: <DateTime rfc3339={statusDetails.expectedResolutionTime}/></div>}
-          {!!statusDetails.updateTime && <div>Update Time: <DateTime rfc3339={statusDetails.updateTime}/></div>}
+        <h4 style={{ marginBottom: 4 }}>Status</h4>
+        <div style={{ fontSize: '0.85rem', lineHeight: 1.7 }}>
+          <div>Status: {translateDiscoveryStatus(statusDetails.status)}{statusDetails.explanation && ` — ${statusDetails.explanation}`}</div>
+          {statusDetails.detectionTime && <div>Detection time: <DateTime rfc3339={statusDetails.detectionTime} /></div>}
+          {statusDetails.expectedResolutionTime && <div>Expected resolution: <DateTime rfc3339={statusDetails.expectedResolutionTime} /></div>}
+          {statusDetails.updateTime && <div>Updated: <DateTime rfc3339={statusDetails.updateTime} /></div>}
         </div>
       </>
-      }
-
-      {!!outagesDetails && !!outagesDetails.outages && !!outagesDetails.outages.length &&
+    )}
+    {outagesDetails?.outages?.length > 0 && (
       <>
-        <h4>Scheduled Outages</h4>
-        <ul style={{fontSize: '0.8rem'}}>
-        {outagesDetails.outages.map((outage, index) =>
-          <Outage outage={outage} key={index}/>
-        )}
+        <h4 style={{ marginBottom: 4 }}>Scheduled Outages</h4>
+        <ul style={{ fontSize: '0.85rem', lineHeight: 1.7 }}>
+          {outagesDetails.outages.map((outage, i) => (
+            <li key={i}>
+              <div>Time: <DateTime rfc3339={outage.outageTime} /></div>
+              {outage.duration && <div>Duration: <Duration value={outage.duration} alwaysShowNumber /></div>}
+              {outage.isPartial && <div>Partial outage</div>}
+              <div>&#8220;{outage.explanation}&#8221;</div>
+            </li>
+          ))}
         </ul>
       </>
-      }
-    </>
-    )
-  }
-}
+    )}
+  </>
+)
 
-const Outage = props => {
-  const { outage } = props
-  return (
-    <li>
-      <div>Outage Time: <DateTime rfc3339={outage.outageTime}/></div>
-      {!!outage.duration && <div>Planned Duration: <Duration value={outage.duration} alwaysShowNumber/></div>}
-      {!!outage.isPartial && <div>Partial: {outage.isPartial}</div>}
-      <div>&laquo;{outage.explanation}&raquo;</div>
-    </li>
-  )
-}
-
-const mapStateToProps = state => ({
-})
-
-const mapDispatchToProps = {
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(StatusOutages)
+export default connect()(StatusOutages)

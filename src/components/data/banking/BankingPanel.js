@@ -1,6 +1,6 @@
 import React from 'react'
-import {connect} from 'react-redux'
-import {makeStyles} from '@material-ui/core/styles'
+import { connect } from 'react-redux'
+import { makeStyles } from '@material-ui/core/styles'
 import Accordion from '@material-ui/core/Accordion'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
 import AccordionActions from '@material-ui/core/AccordionActions'
@@ -9,96 +9,111 @@ import SubjectIcon from '@material-ui/icons/Subject'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
 import CompareIcon from '@material-ui/icons/Compare'
-import { fade } from '@material-ui/core/styles/colorManipulator'
 import Fab from '@material-ui/core/Fab'
 import Grid from '@material-ui/core/Grid'
 import BankingProductList from './BankingProductList'
 import { compareProducts } from '../../../store/banking/comparison'
 
 const useStyles = makeStyles(theme => ({
-  container: {
-    marginLeft: theme.typography.pxToRem(20),
-    marginRight: theme.typography.pxToRem(20)
-  },
   panel: {
-    backgroundColor: fade('#fff', 0.9)
+    backgroundColor: '#fff',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
   },
   heading: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    fontSize: theme.typography.pxToRem(20),
+    gap: 8,
+    fontSize: theme.typography.pxToRem(18),
+    fontWeight: 500,
   },
   details: {
-    maxWidth:'95%',
+    maxWidth: '95%',
     marginLeft: 'auto',
     marginRight: 'auto',
-    marginBottom: 20
+    marginBottom: 20,
   },
-  button: {
-    margin: theme.spacing(1)
+  container: {
+    marginLeft: theme.typography.pxToRem(20),
+    marginRight: theme.typography.pxToRem(20),
   },
-  leftIcon: {
-    marginRight: theme.spacing(1),
-  }
+  sourceHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '8px 0 4px',
+    marginBottom: 4,
+    borderBottom: '2px solid #e8eaf6',
+  },
+  sourceIcon: {
+    width: 32,
+    height: 32,
+    objectFit: 'contain',
+  },
+  sourceName: {
+    fontSize: theme.typography.pxToRem(15),
+    fontWeight: 600,
+    color: '#3f51b5',
+  },
 }))
 
 const BankingPanel = (props) => {
-  const {dataSources, savedDataSourcesCount} = props
+  const { dataSources, savedDataSourcesCount } = props
   const classes = useStyles()
   const [expanded, setExpanded] = React.useState(true)
+
   const compare = () => {
-    if( /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      alert('The screen size is too small! Please use a bigger screen to compare.')
+    if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      alert('Screen too small — please use a larger device to compare.')
       return
     }
     props.compareProducts(props.selectedProducts)
     setExpanded(false)
   }
-  const toggleExpansion = (event, newExpanded) => {
-    setExpanded(newExpanded)
-  }
 
-  const getWidth = (dataSourceCount, min) => {
-    return Math.max(12 / dataSourceCount, min)
-  }
+  const colWidth = (count, min) => Math.max(12 / count, min)
 
   return (
-    <Accordion defaultExpanded className={classes.panel} expanded={expanded} onChange={toggleExpansion}>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon/>}
-        aria-controls='panel1c-content'
-      >
+    <Accordion defaultExpanded className={classes.panel} expanded={expanded} onChange={(_, v) => setExpanded(v)}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="banking-content">
         <div className={classes.heading}>
-          <SubjectIcon/><Typography style={{paddingLeft: 8}}>Products</Typography>
+          <SubjectIcon />
+          <Typography>Banking Products</Typography>
         </div>
       </AccordionSummary>
       <div className={classes.details}>
-      {
-        savedDataSourcesCount > 0 &&
-        <Grid container alignItems='flex-start' spacing={2} className={classes.container}>
-          {dataSources.map((dataSource, index) => (
-            isBankingDataSource(dataSource) &&
-            <Grid item key={index}
-                  xs={getWidth(savedDataSourcesCount, 12)}
-                  sm={getWidth(savedDataSourcesCount, 12)}
-                  md={getWidth(savedDataSourcesCount, 6)}
-                  lg={getWidth(savedDataSourcesCount, 4)}
-                  xl={getWidth(savedDataSourcesCount, 3)}
-            >
-              <div className="title">{!!dataSource.icon && <span><img src={dataSource.icon} alt=""/></span>}<h2>{dataSource.name}</h2></div>
-              <BankingProductList dataSource={dataSource} dataSourceIndex={index}/>
-            </Grid>
-          ))}
-        </Grid>
-      }
+        {savedDataSourcesCount > 0 && (
+          <Grid container alignItems="flex-start" spacing={2} className={classes.container}>
+            {dataSources.map((ds, index) =>
+              isBankingDataSource(ds) && (
+                <Grid item key={index}
+                  xs={colWidth(savedDataSourcesCount, 12)}
+                  sm={colWidth(savedDataSourcesCount, 12)}
+                  md={colWidth(savedDataSourcesCount, 6)}
+                  lg={colWidth(savedDataSourcesCount, 4)}
+                  xl={colWidth(savedDataSourcesCount, 3)}
+                >
+                  <div className={classes.sourceHeader}>
+                    {ds.icon && <img src={ds.icon} alt="" className={classes.sourceIcon} />}
+                    <span className={classes.sourceName}>{ds.name}</span>
+                  </div>
+                  <BankingProductList dataSource={ds} dataSourceIndex={index} />
+                </Grid>
+              )
+            )}
+          </Grid>
+        )}
       </div>
-      <Divider/>
+      <Divider />
       <AccordionActions>
-        <Fab variant='extended' size='medium' color='primary'
-             disabled={props.selectedProducts.length < 2 || props.selectedProducts.length > 4}
-             className={classes.button} onClick={compare}>
-          <CompareIcon className={classes.leftIcon}/>
+        <Fab
+          variant="extended"
+          size="medium"
+          color="primary"
+          disabled={props.selectedProducts.length < 2 || props.selectedProducts.length > 4}
+          onClick={compare}
+          style={{ margin: 8 }}
+        >
+          <CompareIcon style={{ marginRight: 8 }} />
           Compare
         </Fab>
       </AccordionActions>
@@ -106,16 +121,14 @@ const BankingPanel = (props) => {
   )
 }
 
-function isBankingDataSource(dataSource) {
-  return !dataSource.unsaved && !dataSource.deleted && dataSource.enabled && (!dataSource.sectors || dataSource.sectors.includes("banking"))
+function isBankingDataSource(ds) {
+  return !ds.unsaved && !ds.deleted && ds.enabled && (!ds.sectors || ds.sectors.includes('banking'))
 }
 
-const mapStateToProps = state=>({
-  dataSources : state.dataSources,
-  savedDataSourcesCount: state.dataSources.filter(dataSource => isBankingDataSource(dataSource)).length,
-  selectedProducts: state.bankingSelection
+const mapStateToProps = state => ({
+  dataSources: state.dataSources,
+  savedDataSourcesCount: state.dataSources.filter(isBankingDataSource).length,
+  selectedProducts: state.bankingSelection,
 })
 
-const mapDispatchToProps = { compareProducts }
-
-export default connect(mapStateToProps, mapDispatchToProps)(BankingPanel)
+export default connect(mapStateToProps, { compareProducts })(BankingPanel)

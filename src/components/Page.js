@@ -16,47 +16,54 @@ import AEMODiscoveryInfo from './data/discovery/AEMODiscoveryInfo'
 
 const useStyles = makeStyles(theme => ({
   hidden: {
-    display: 'none'
-  }
+    display: 'none',
+  },
+  tabBar: {
+    marginTop: 12,
+    marginBottom: 12,
+    borderRadius: 8,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+  },
+  content: {
+    paddingBottom: 40,
+  },
 }))
-  
+
 function Page() {
-  const [value, setValue] = React.useState(0)
+  const [tab, setTab] = React.useState(0)
   const classes = useStyles()
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
-  
   return (
     <Container maxWidth={false}>
-      <Header title='Product Comparator (demo)'/>
-      <DataSourcePanel/>
-      <ConsolePanel/>
-      <AppBar position="static" style={{marginTop: 8, marginBottom: 8}}>
-        <Tabs value={value} onChange={handleChange} aria-label="Product sections">
+      <Header title="CDR Product Comparator" />
+      <DataSourcePanel />
+      <ConsolePanel />
+      <AppBar position="static" className={classes.tabBar}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label="Product sections">
           <Tab label="Banking" />
           <Tab label="Energy" />
-          <Tab label="Status and Outages" />
-          <Tab label="AEMO - Status and Outages" />
+          <Tab label="Status & Outages" />
+          <Tab label="AEMO Status" />
         </Tabs>
       </AppBar>
-      <div className={value === 0 ? '' : classes.hidden}>
-        <BankingPanel/>
-        <BankingComparisonPanel/>
-      </div>
-      <div className={value === 1 ? '' : classes.hidden}>
-        <EnergyPanel/>
-        <EnergyComparisonPanel/>
-      </div>
-      <div className={value === 2 ? '' : classes.hidden}>
-        <DiscoveryInfo/>
-      </div>
-      <div className={value === 3 ? '' : classes.hidden}>
-        <AEMODiscoveryInfo/>
+      <div className={classes.content}>
+        <div className={tab !== 0 ? classes.hidden : ''}>
+          <BankingPanel />
+          <BankingComparisonPanel />
+        </div>
+        <div className={tab !== 1 ? classes.hidden : ''}>
+          <EnergyPanel />
+          <EnergyComparisonPanel />
+        </div>
+        <div className={tab !== 2 ? classes.hidden : ''}>
+          <DiscoveryInfo />
+        </div>
+        <div className={tab !== 3 ? classes.hidden : ''}>
+          <AEMODiscoveryInfo />
+        </div>
       </div>
     </Container>
-  );
+  )
 }
 
-export default Page;
+export default Page
