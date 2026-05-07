@@ -26,10 +26,7 @@ export default function Header({ title }) {
         </div>
       </div>
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ color: '#f1f5f9', fontSize: '0.8rem', fontWeight: 600 }}>Ahmad ElSayed</div>
-          <div style={{ color: '#475569', fontSize: '0.68rem', fontWeight: 500 }}>github.com/Ackmed1337</div>
-        </div>
+        <div style={{ color: '#f1f5f9', fontSize: '0.8rem', fontWeight: 600 }}>Ahmad ElSayed — Ultradata Version</div>
         <span style={{
           background: '#1e3a8a',
           color: '#93c5fd',
