@@ -6,32 +6,26 @@ import {
 } from './actions'
 
 const DEFAULT_XV = '999'
+const DEFAULT_XMINV = '1'
 
-export default function versionInfo(state={vHeaders: {xV: DEFAULT_XV, xMinV: '1'}}, action) {
-  const vHeaders = {
-    xV: DEFAULT_XV,
-    xMinV: loadVersionField("x-min-v") || state.vHeaders.xMinV
-  }
+export default function versionInfo(state={vHeaders: {xV: DEFAULT_XV, xMinV: DEFAULT_XMINV}}, action) {
   switch (action.type) {
     case LOAD_VERSION_INFO:
-      return {vHeaders}
+      return {
+        vHeaders: {
+          xV: DEFAULT_XV,
+          xMinV: window.localStorage.getItem('x-min-v') || DEFAULT_XMINV
+        }
+      }
     case SAVE_VERSION_INFO:
       const vi = action.versionInfo
-      saveVersionField("x-min-v", vi.xMinV)
+      window.localStorage.setItem('x-min-v', vi.xMinV)
       return {vHeaders: vi}
     case SET_VERSIONS_EDITABLE:
-      return {editable: true, vHeaders}
+      return {editable: true, vHeaders: state.vHeaders}
     case SET_VERSIONS_READ_ONLY:
-      return {vHeaders}
+      return {vHeaders: state.vHeaders}
     default:
       return state
   }
-}
-
-function loadVersionField(vf) {
-  return window.localStorage.getItem(vf)
-}
-
-function saveVersionField(vf, value) {
-  window.localStorage.setItem(vf, value)
 }
