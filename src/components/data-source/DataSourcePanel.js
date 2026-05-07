@@ -93,12 +93,11 @@ class DataSourcePanel extends React.Component {
         <div style={{ maxHeight: 300, overflow: 'auto' }}>
           {dataSources.length > 0 && (
             <div className={classes.details}>
-              <Grid container spacing={1} style={{ fontSize: 'smaller', fontStyle: 'italic', paddingRight: 60 }}>
-                <Grid item xs={1}>Enabled</Grid>
-                <Grid item xs={3}>Name</Grid>
-                <Grid item xs={4}>API base URL</Grid>
-                <Grid item xs={3}>Icon URL</Grid>
-              </Grid>
+              <div style={{ display: 'flex', gap: 8, padding: '0 0 4px 36px', fontSize: '0.72rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.4px', borderBottom: '1px solid #f1f5f9', marginBottom: 2 }}>
+                <div style={{ flex: '0 0 22%' }}>Name</div>
+                <div style={{ flex: '0 0 34%' }}>API base URL</div>
+                <div style={{ flex: '0 0 28%' }}>Icon URL</div>
+              </div>
               {dataSources.map((ds, i) => !ds.deleted && <DataSource key={i} dataSource={ds} index={i} />)}
             </div>
           )}

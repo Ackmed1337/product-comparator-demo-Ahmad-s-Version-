@@ -28,25 +28,26 @@ const useStyles = makeStyles(theme => ({
   },
   icon: { color: '#64748b', fontSize: '1.1rem' },
   terminal: {
-    background: '#0f172a',
+    background: '#f8fafc',
     maxHeight: 300,
     overflow: 'auto',
     padding: '10px 16px',
     fontFamily: "'Fira Code', 'JetBrains Mono', 'Courier New', monospace",
     fontSize: 12,
     lineHeight: 1.8,
-    borderRadius: '0 0 0 0',
+    borderTop: '1px solid #e2e8f0',
+    borderBottom: '1px solid #e2e8f0',
   },
   entry: {
     display: 'flex',
     gap: 10,
-    borderBottom: '1px solid #1e293b',
+    borderBottom: '1px solid #f1f5f9',
     padding: '2px 0',
     '&:last-child': { borderBottom: 'none' },
   },
-  ts: { color: '#475569', flexShrink: 0, fontSize: 11, paddingTop: 1 },
-  normal: { color: '#94a3b8' },
-  error: { color: '#f87171' },
+  ts: { color: '#94a3b8', flexShrink: 0, fontSize: 11, paddingTop: 1 },
+  normal: { color: '#475569' },
+  error: { color: '#dc2626' },
   actions: { padding: '8px 16px' },
 }))
 
@@ -118,7 +119,7 @@ const TreeView = ({ data, toggled = false, name = null, isLast = true, isChildEl
           <>&nbsp;&nbsp;</>
         </>
       )}
-      {name && <strong style={{ color: '#7dd3fc' }}>{name}: </strong>}
+      {name && <strong style={{ color: '#2563eb' }}>{name}: </strong>}
       {plain
         ? (data ? String(data) : data === null ? 'null' : data)
         : (
@@ -129,7 +130,7 @@ const TreeView = ({ data, toggled = false, name = null, isLast = true, isChildEl
               typeof data[v] === 'object'
                 ? <TreeView key={`${name}-${v}-${i}`} data={data[v]} isLast={i === a.length - 1} name={isArray ? null : v} isChildElement isParentToggled={isParentToggled && isToggled} />
                 : <p key={`${name}-${v}-${i}`} className={`tree-element${isToggled ? '' : ' collapsed'}`}>
-                    {!isArray && <strong style={{ color: '#7dd3fc' }}>{v}: </strong>}
+                    {!isArray && <strong style={{ color: '#2563eb' }}>{v}: </strong>}
                     <Print val={data[v]} />
                     {i !== a.length - 1 ? ',' : ''}
                   </p>
@@ -145,7 +146,7 @@ const TreeView = ({ data, toggled = false, name = null, isLast = true, isChildEl
 
 const Print = ({ val }) => {
   const q = typeof val === 'string' ? '"' : ''
-  const color = typeof val === 'string' ? '#86efac' : typeof val === 'number' ? '#fbbf24' : '#f87171'
+  const color = typeof val === 'string' ? '#16a34a' : typeof val === 'number' ? '#d97706' : '#dc2626'
   return <span style={{ color }}>{q + val + q}</span>
 }
 

@@ -1,135 +1,76 @@
 import React from 'react'
-import { makeStyles, withStyles } from '@material-ui/core/styles'
-import Grid from '@material-ui/core/Grid'
+import { makeStyles } from '@material-ui/core/styles'
 import Checkbox from '@material-ui/core/Checkbox'
 import TextField from '@material-ui/core/TextField'
 import IconButton from '@material-ui/core/IconButton'
 import DoneOutlineIcon from '@material-ui/icons/DoneOutline'
 import DeleteIcon from '@material-ui/icons/Delete'
 import Tooltip from '@material-ui/core/Tooltip'
+import { connect } from 'react-redux'
+import isUrl from '../../utils/url'
 import {
   saveDataSource,
   deleteDataSource,
   enableDataSource,
   modifyDataSourceName,
   modifyDataSourceIcon,
+  modifyDataSourceUrl,
   modifyDataSourceEnergyPrdUrl,
-  modifyDataSourceUrl
 } from '../../store/data-source'
-import { clearSelection} from '../../store/banking/selection'
+import { clearSelection } from '../../store/banking/selection'
 import { deleteData, clearData } from '../../store/banking/data'
-import {connect} from 'react-redux'
-import isUrl from '../../utils/url'
-import Snackbar from '@material-ui/core/Snackbar'
-import CloseIcon from '@material-ui/icons/Close'
-import ErrorIcon from '@material-ui/icons/Error'
-import {SnackbarContent} from '@material-ui/core'
-import MuiAccordion from '@material-ui/core/Accordion'
-import MuiAccordionSummary from '@material-ui/core/AccordionSummary'
-import MuiAccordionDetails from '@material-ui/core/AccordionDetails'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 
-const Accordion = withStyles({
-  root: {
-    '&:before': {
-      display: 'none'
-    },
-    boxShadow: 'none',
-    '&.Mui-expanded': {
-      boxShadow: '0 2px 1px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)'
-    }
-  }
-})(MuiAccordion)
-
-const AccordionSummary = withStyles({
-  content: {
-    margin: 0
-  }
-})(MuiAccordionSummary)
-
-const AccordionDetails = withStyles({
-  root: {
-    padding: 0
-  }
-})(MuiAccordionDetails)
-
-const useStyles = makeStyles((theme) => ({
-  buttonContainer: {
+const useStyles = makeStyles(theme => ({
+  row: {
     display: 'flex',
-    alignItems: 'flex-end'
+    alignItems: 'center',
+    gap: 8,
+    padding: '6px 0',
+    borderBottom: '1px solid #f1f5f9',
+    '&:last-child': { borderBottom: 'none' },
   },
-  snackbar: {
-    backgroundColor: theme.palette.error.dark
+  field: { flex: 1 },
+  error: {
+    fontSize: '0.72rem',
+    color: '#dc2626',
+    marginTop: 2,
+    marginLeft: 2,
   },
-  message: {
-    display: 'flex',
-    alignItems: 'center'
-  },
-  fieldLabel: {
-    width: '95%'
-  },
-  icon: {
-    marginRight: theme.spacing(2)
-  }
 }))
 
 const DataSource = (props) => {
-
   const classes = useStyles()
-
   const { dataSource, index } = props
+  const [error, setError] = React.useState('')
 
-  const [errorState, setErrorState] = React.useState({open: false, errorMessage: ''})
-
-  const handleChange = name => event => {
-    if (name === 'name') {
-      props.modifyDataSourceName(index, {...dataSource, [name]: event.target.value})
-    } else if (name === 'url') {
-      props.modifyDataSourceUrl(index, {...dataSource, [name]: event.target.value})
-      if (!dataSource.unsaved) {
-        props.clearSelection(index)
-        props.clearData(index)
-      }
-    } else if (name === 'energyPrd') {
-      props.modifyDataSourceEnergyPrdUrl(index, {...dataSource, [name]: event.target.value})
-      if (!dataSource.unsaved) {
-        props.clearSelection(index)
-        props.clearData(index)
-      }
+  const change = name => e => {
+    const val = name === 'enabled' ? e.target.checked : e.target.value
+    if (name === 'name') props.modifyDataSourceName(index, { ...dataSource, [name]: val })
+    else if (name === 'url') {
+      props.modifyDataSourceUrl(index, { ...dataSource, [name]: val })
+      if (!dataSource.unsaved) { props.clearSelection(index); props.clearData(index) }
     } else if (name === 'icon') {
-      props.modifyDataSourceIcon(index, {...dataSource, [name]: event.target.value})
+      props.modifyDataSourceIcon(index, { ...dataSource, [name]: val })
     } else if (name === 'enabled') {
-      props.enableDataSource(index, {...dataSource, [name]: event.target.checked})
-      if (dataSource.enabled) {
-        props.clearSelection(index)
-        props.clearData(index)
-      }
+      props.enableDataSource(index, { ...dataSource, [name]: val })
+      if (dataSource.enabled) { props.clearSelection(index); props.clearData(index) }
     }
   }
 
-  const save = ev => {
-    if (!isDataSourceValid()) {
-      let message = ''
-      if (dataSource.name.trim().length === 0) {
-        message = 'Bank name is required. '
-      }
-      if (!isUrl(dataSource.url)) {
-        message += 'URL is invalid.'
-      }
-      setErrorState({
-        open: true,
-        errorMessage: message
-      })
+  const valid = () => dataSource.name.trim().length > 0 && isUrl(dataSource.url)
+
+  const save = e => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (!valid()) {
+      const msgs = []
+      if (!dataSource.name.trim()) msgs.push('Name required')
+      if (!isUrl(dataSource.url)) msgs.push('URL invalid')
+      setError(msgs.join(' · '))
     } else {
-      props.saveDataSource(index, {...dataSource})
+      setError('')
+      props.saveDataSource(index, { ...dataSource })
     }
-    ev.stopPropagation()
-    ev.preventDefault()
-  }
-
-  const closeErrorMessage = () => {
-    setErrorState({...errorState, open: false})
   }
 
   const del = () => {
@@ -138,143 +79,69 @@ const DataSource = (props) => {
     props.clearSelection(index)
   }
 
-  const isDataSourceValid = () => {
-    return dataSource.name.trim().length > 0 && isUrl(dataSource.url)
-  }
-
-  const ignore = ev => ev.stopPropagation()
+  const stop = e => e.stopPropagation()
 
   return (
-    <Accordion defaultExpanded={false}>
-    <AccordionSummary
-      expandIcon={<ExpandMoreIcon/>}
-      aria-controls='panel1c-content'
-    >
-    <Grid container spacing={1}>
-      <Grid item xs={1}>
-      <FormControlLabel
-        aria-label="Datasource Enabled"
-        onClick={ignore}
-        onFocus={ignore}
-        control={<Checkbox
+    <div>
+      <div className={classes.row} onClick={stop}>
+        <Checkbox
           checked={dataSource.enabled}
-          onChange={handleChange('enabled')}
-        />}
-      />
-      </Grid>
-      <Grid item xs={3}>
-        <FormControlLabel className={classes.fieldLabel}
-          aria-label="Datasource Name"
-          onClick={ignore}
-          onFocus={ignore}
-          control={<TextField
+          onChange={change('enabled')}
+          color="primary"
+          size="small"
+          style={{ padding: 4, flexShrink: 0 }}
+        />
+        <div className={classes.field} style={{ flex: '0 0 22%' }}>
+          <TextField
             error={!dataSource.name.trim().length}
-            required={true}
-            onChange={handleChange('name')}
-            margin='normal'
-            placeholder='e.g. Acme Bank'
             value={dataSource.name}
+            onChange={change('name')}
+            placeholder="e.g. Acme Bank"
+            size="small"
             fullWidth
-          />}
-        />
-      </Grid>
-      <Grid item xs={4}>
-        <FormControlLabel className={classes.fieldLabel}
-          aria-label="Datasource URL"
-          onClick={ignore}
-          onFocus={ignore}
-          control={<TextField
+            inputProps={{ style: { fontSize: '0.82rem', padding: '6px 8px' } }}
+          />
+        </div>
+        <div className={classes.field} style={{ flex: '0 0 34%' }}>
+          <TextField
             error={!isUrl(dataSource.url)}
-            required={true}
-            onChange={handleChange('url')}
-            placeholder='e.g. https://data.holder'
             value={dataSource.url}
-            margin='normal'
+            onChange={change('url')}
+            placeholder="https://data.holder"
+            size="small"
             fullWidth
-          />}
-        />
-        <FormControlLabel
-          aria-label="Error message"
-          onClick={ignore}
-          onFocus={ignore}
-          control={<Snackbar
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-            open={errorState.open}
-            autoHideDuration={3000}
-          >
-            <SnackbarContent
-              className={classes.snackbar}
-              message={<span className={classes.message}><ErrorIcon className={classes.icon}/> {errorState.errorMessage}</span>}
-              action={[
-                <IconButton key='close' aria-label='Close' color='inherit' onClick={closeErrorMessage}>
-                  <CloseIcon className={classes.icon} />
-                </IconButton>
-              ]}
-            />
-          </Snackbar>}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <FormControlLabel className={classes.fieldLabel}
-          aria-label="Datasource Logo"
-          onClick={ignore}
-          onFocus={ignore}
-          control={<TextField
+            inputProps={{ style: { fontSize: '0.82rem', padding: '6px 8px' } }}
+          />
+        </div>
+        <div className={classes.field} style={{ flex: '0 0 28%' }}>
+          <TextField
             error={!!dataSource.icon && !isUrl(dataSource.icon)}
-            onChange={handleChange('icon')}
-            placeholder='e.g. https://data.holder/images/bank.png'
-            value={dataSource.icon}
-            margin='normal'
+            value={dataSource.icon || ''}
+            onChange={change('icon')}
+            placeholder="https://...icon.png"
+            size="small"
             fullWidth
-          />}
-        />
-      </Grid>
-      <Grid item xs={1} className={classes.buttonContainer}>
-        { dataSource.unsaved ?
-        <FormControlLabel
-          aria-label="Save"
-          onClick={ignore}
-          onFocus={ignore}
-          control={<Tooltip title='Save'>
-            <IconButton aria-label='Save' className={classes.margin} onClick={save}>
-              <DoneOutlineIcon fontSize='large' color={isDataSourceValid() ? 'primary' : 'action'}/>
-            </IconButton>
-          </Tooltip>}
-        /> :
-        <FormControlLabel
-          aria-label="Delete"
-          onClick={ignore}
-          onFocus={ignore}
-          control={<Tooltip title='Delete'>
-            <IconButton aria-label='Delete' className={classes.margin} onClick={del}>
-              <DeleteIcon fontSize='large' color='secondary'/>
-            </IconButton>
-          </Tooltip>}
-        />
-        }
-      </Grid>
-    </Grid>
-    </AccordionSummary>
-    <AccordionDetails>
-      <Grid item xs={1}>
-      </Grid>
-      <Grid item xs={4}>
-      <TextField
-        error={!isUrl(dataSource.energyPrd)}
-        required={false}
-        onChange={handleChange('energyPrd')}
-        placeholder='e.g. https://data.holder'
-        value={dataSource.energyPrd || ''}
-        margin='normal'
-        fullWidth
-        label='AER PRD URL (if needed)'
-      />
-      </Grid>
-    </AccordionDetails>
-    </Accordion>
+            inputProps={{ style: { fontSize: '0.82rem', padding: '6px 8px' } }}
+          />
+        </div>
+        <div style={{ flexShrink: 0 }}>
+          {dataSource.unsaved ? (
+            <Tooltip title="Save">
+              <IconButton size="small" onClick={save}>
+                <DoneOutlineIcon fontSize="small" color={valid() ? 'primary' : 'disabled'} />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Remove">
+              <IconButton size="small" onClick={del}>
+                <DeleteIcon fontSize="small" color="error" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+      {error && <div className={classes.error}>{error}</div>}
+    </div>
   )
 }
 
@@ -288,7 +155,7 @@ const mapDispatchToProps = {
   modifyDataSourceIcon,
   clearSelection,
   deleteData,
-  clearData
+  clearData,
 }
 
 export default connect(null, mapDispatchToProps)(DataSource)
