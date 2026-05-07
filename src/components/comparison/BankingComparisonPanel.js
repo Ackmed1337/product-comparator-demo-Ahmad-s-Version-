@@ -69,12 +69,14 @@ const useStyles = makeStyles(theme => ({
   },
   emptyCell: { color: '#d1d5db' },
   bestCell: {
-    background: '#f0fdf4 !important',
-    borderTop: '2px solid #16a34a',
+    background: '#bbf7d0 !important',
+    borderTop: '3px solid #16a34a',
+    borderLeft: '3px solid #16a34a',
   },
   worstCell: {
-    background: '#fef2f2 !important',
-    borderTop: '2px solid #dc2626',
+    background: '#fecaca !important',
+    borderTop: '3px solid #dc2626',
+    borderLeft: '3px solid #dc2626',
   },
   stickyHead: {
     position: 'sticky',
